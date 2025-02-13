@@ -1,0 +1,42 @@
+const express = require("express");
+const router = express.Router();
+const borrowingController = require("../controllers/borrowingController");
+const { asyncHandler } = require("../middlewares/asyncHandler");
+const authorization = require("../middlewares/authorization");
+
+router
+  .route("/borrowBook/:id")  
+  .post(
+    asyncHandler(authorization),
+    asyncHandler(borrowingController.borrowBook)
+  );
+
+router
+  .route("/returnBook/:borrow_id")  
+  .put(
+    asyncHandler(authorization),
+    asyncHandler(borrowingController.returnBook)
+  );
+
+router
+  .route("/getBorrowingHistoryAll/:member_id")  
+  .get(
+    asyncHandler(authorization),
+    asyncHandler(borrowingController.getBorrowingHistoryAll)
+  );
+
+router
+  .route("/getBorrowingHistoryById/:member_id")  
+  .get(
+    asyncHandler(authorization),
+    asyncHandler(borrowingController.getBorrowingHistoryById)
+  );
+
+router
+  .route("/getBooksStatus/:member_id")  
+  .get(
+    asyncHandler(authorization),
+    asyncHandler(borrowingController.getBooksStatus)
+  );
+
+module.exports = router;
