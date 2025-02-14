@@ -6,10 +6,7 @@ const authorization = require("../middlewares/authorization");
 
 router
   .route("/addBook")
-  .post(
-    asyncHandler(authorization),
-    asyncHandler(bookController.addBook)
-  );
+  .post(asyncHandler(authorization), asyncHandler(bookController.addBook));
 
 router
   .route("/updateBookById/:id")
@@ -25,12 +22,20 @@ router
     asyncHandler(bookController.deleteBookById)
   );
 
+router.route("/getBookById/:id").get(asyncHandler(bookController.getBookById));
+
+router.route("/getAllBook").get(asyncHandler(bookController.getAllBook));
+
 router
-  .route("/getBookById/:id")
-  .get(asyncHandler(bookController.getBookById));
+  .route("/searchBooks")
+  .get(
+    asyncHandler(authorization),
+    asyncHandler(bookController.searchBooks)
+  );
 
   router
-  .route("/getAllBook")
-  .get(asyncHandler(bookController.getAllBook));  
+  .route("/categories")
+  .get(asyncHandler(authorization), asyncHandler(bookController.getAllCategories));
+
 
 module.exports = router;

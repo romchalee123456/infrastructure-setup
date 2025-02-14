@@ -18,6 +18,11 @@ app.use('/api/book', bookRoutes);
 app.use('/api/member', memberRoutes);
 app.use('/api/borrowing', borrowingRoutes);
 
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
+
 prisma.$connect()
   .then(() => {
     console.log('Connected to Prisma database successfully');
