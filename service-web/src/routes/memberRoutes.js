@@ -39,4 +39,13 @@ router
     asyncHandler(memberController.getMemberByUsername)
   );
 
+
+  router
+  .route("/updateProfilePicture")
+  .put(
+    authorization, 
+    asyncHandler(authController.updateProfilePicture)
+  );
+
+
 module.exports = router;

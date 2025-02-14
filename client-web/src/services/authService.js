@@ -1,48 +1,65 @@
 import axios from 'axios';
-import { useCookies } from 'react-cookie'; 
-import { useAuthStore } from './stores/auth';  
-import { useHistory } from 'react-router-dom';
+const API_BASE_URL = "http://localhost:5000"; 
 
 const getSevenDay = () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
 const authService = {
-  isLoggedIn() {
-    const authStore = useAuthStore();
-    return authStore.isLoggedIn;  
+  async register(username, password, first_name, last_name, email, phone_number) {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, { 
+        username, 
+        password, 
+        first_name, 
+        last_name, 
+        email, 
+        phone_number
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error during registration:', error);
+      throw error;
+    }
   },
 
-  async login(email, password) {
+  async login(username, password, setCookie) {
     try {
-      const response = await axios.post('/auth/register', { email, password });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { username, password });
+      const data = response.data;
 
-      const data = response.data.data;
+      if (setCookie) {
+        setCookie('accessToken', data.accessToken, { expires: getSevenDay(), path: '/' });
+        setCookie('refreshToken', data.refreshToken, { expires: getSevenDay(), path: '/' });
+      }
 
-      const { setCookie } = useCookies(['accessToken', 'accessRefreshToken']);
-      setCookie('accessToken', data.token, { expires: getSevenDay() });
-      setCookie('accessRefreshToken', data.refreshToken, { expires: getSevenDay() });
-
-      const authStore = useAuthStore();
-      authStore.logout(); 
-
-      return response.data;
-
+      return data;
     } catch (error) {
       console.error('Error during login:', error);
       throw error;
     }
   },
 
-  logout() {
-    const { removeCookie } = useCookies(['accessToken', 'accessRefreshToken']);
-    const authStore = useAuthStore();
-
+  logout(removeCookie, navigate) {
     removeCookie('accessToken');
-    removeCookie('accessRefreshToken');
+    removeCookie('refreshToken');
+    navigate('/login'); 
+  },
 
-    authStore.logout(); 
+  async refreshToken(cookies, setCookie) {
+    try {
+      if (!cookies.refreshToken) throw new Error('No refresh token found');
 
-    const history = useHistory();
-    history.push('/login'); 
+      const response = await axios.post('/api/auth/refresh', { refreshToken: cookies.refreshToken });
+      const data = response.data;
+
+      if (setCookie) {
+        setCookie('accessToken', data.data.accessToken, { expires: getSevenDay(), path: '/' });
+      }
+
+      return data.data.accessToken;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      throw error;
+    }
   }
 };
 

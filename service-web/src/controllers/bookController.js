@@ -2,7 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 exports.addBook = async (req, res) => {
-  const { title, author, category, total_copies, available_copies } = req.body;
+  const { title, author, category, total_copies, available_copies, cover_image } = req.body;
 
   if (
     !Number.isInteger(total_copies) ||
@@ -25,6 +25,7 @@ exports.addBook = async (req, res) => {
         category,
         total_copies,
         available_copies,
+        cover_image, 
       },
     });
 
@@ -43,7 +44,8 @@ exports.addBook = async (req, res) => {
 
 exports.updateBookById = async (req, res) => {
   const { id } = req.params;
-  const { title, author, category, total_copies, available_copies } = req.body;
+  const { title, author, category, total_copies, available_copies, cover_image } = req.body;
+
   if (
     !Number.isInteger(total_copies) ||
     total_copies <= 0 ||
@@ -56,14 +58,18 @@ exports.updateBookById = async (req, res) => {
       message: "Invalid total_copies or available_copies value",
     });
   }
+
   try {
     const result = await prisma.book.update({
       where: { book_id: Number(id) },
-      title,
-      author,
-      category,
-      total_copies,
-      available_copies,
+      data: { 
+        title,
+        author,
+        category,
+        total_copies,
+        available_copies,
+        cover_image, 
+      },
     });
 
     res.status(200).send({
@@ -82,7 +88,7 @@ exports.updateBookById = async (req, res) => {
 exports.deleteBookById = async (req, res) => {
   const { id } = req.params;
   try {
-    const data = await prisma.member.delete({
+    const data = await prisma.book.delete({ 
       where: { book_id: Number(id) },
     });
 
@@ -102,8 +108,8 @@ exports.deleteBookById = async (req, res) => {
 exports.getBookById = async (req, res) => {
   const { id } = req.params;
   try {
-    const data = await prisma.member.findUnique({
-      where: { member_id: Number(id) },
+    const data = await prisma.book.findUnique({ 
+      where: { book_id: Number(id) },
     });
 
     if (!data) {

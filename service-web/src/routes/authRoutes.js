@@ -11,8 +11,9 @@ router.route("/login").post(asyncHandler(authController.login));
 router
   .route("/refresh")
   .post(
-    asyncHandler(authorization),
+    authorization,
     asyncHandler(authController.refreshAccessToken)
   );
 
 module.exports = router;
+
