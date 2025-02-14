@@ -146,3 +146,35 @@ exports.getMemberById = async (req, res) => {
     });
   }
 };
+
+exports.getMemberByUsername = async (req, res) => {
+  const { username } = req.params;
+  try {
+    const data = await prisma.member.findMany({
+      where: {
+        username: {
+          contains: username,  
+          mode: "insensitive", 
+        },
+      },
+    });
+
+    if (!data || data.length === 0) {
+      return res.status(404).send({
+        status: "error",
+        message: "No members found",
+      });
+    }
+
+    res.status(200).send({
+      status: "success",
+      data: data,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({
+      status: "error",
+      message: err.message,
+    });
+  }
+};

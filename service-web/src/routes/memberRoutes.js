@@ -26,12 +26,17 @@ router
     asyncHandler(memberController.deleteMemberById)
   );
 
-router
-  .route("/getAllMember")
-  .get(asyncHandler(memberController.getAllMember));
+router.route("/getAllMember").get(asyncHandler(memberController.getAllMember));
 
 router
   .route("/getMemberById/:id")
   .get(asyncHandler(memberController.getMemberById));
+
+router
+  .route("/getMemberByUsername/:username")
+  .get(
+    asyncHandler(authorization),
+    asyncHandler(memberController.getMemberByUsername)
+  );
 
 module.exports = router;
