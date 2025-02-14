@@ -9,24 +9,26 @@ datasource db {
 
 model Book {
   book_id          Int         @id @default(autoincrement())
-  title            String      @db.VarChar(250)
-  author           String      @db.VarChar(250)
-  category         String      @db.VarChar(250)
+  title            String     
+  author           String     
+  category         String     
   total_copies     Int         @default(0)
   available_copies Int         @default(0)
+  cover_image      String?     
   Borrowings       Borrowing[]
 }
 
 model Member {
   member_id       Int         @id @default(autoincrement())
-  username        String      @unique @db.VarChar(250)
-  password        String      @db.VarChar(250)
-  first_name      String      @db.VarChar(250)
-  last_name       String      @db.VarChar(250)
-  email           String      @unique @db.VarChar(250)
-  phone_number    String      @db.VarChar(15)
+  username        String      @unique
+  password        String      
+  first_name      String      
+  last_name       String      
+  email           String      @unique
+  phone_number    String      
   role            Role
-  membership_date DateTime    @db.Date
+  membership_date DateTime    
+  profile_image   String?    
   Borrowings      Borrowing[]
 }
 
@@ -34,8 +36,8 @@ model Borrowing {
   borrow_id   Int       @id @default(autoincrement())
   member_id   Int
   book_id     Int
-  borrow_date DateTime  @db.Date
-  due_date    DateTime  @db.Date
+  borrow_date DateTime  
+  due_date    DateTime  
   return_date DateTime?
   status      Status
   book        Book      @relation(fields: [book_id], references: [book_id], onDelete: Cascade)

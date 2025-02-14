@@ -28,14 +28,13 @@ router.route("/getAllBook").get(asyncHandler(bookController.getAllBook));
 
 router
   .route("/searchBooks")
+  .get(asyncHandler(authorization), asyncHandler(bookController.searchBooks));
+
+router
+  .route("/categories")
   .get(
     asyncHandler(authorization),
-    asyncHandler(bookController.searchBooks)
+    asyncHandler(bookController.getAllCategories)
   );
-
-  router
-  .route("/categories")
-  .get(asyncHandler(authorization), asyncHandler(bookController.getAllCategories));
-
 
 module.exports = router;

@@ -178,3 +178,36 @@ exports.getMemberByUsername = async (req, res) => {
     });
   }
 };
+exports.updateProfilePicture = async (req, res) => {
+  const { member_id } = req.user;
+  const { profile_picture } = req.body;
+  try {
+    if (!profile_picture) {
+      return res.status(400).send({
+        status: "error",
+        message: "Profile picture URL is required",
+      });
+    }
+
+    const updatedUser = await prisma.member.update({
+      where: { member_id },
+      data: { profile_picture },
+    });
+
+    res.status(200).send({
+      status: "success",
+      message: "Profile picture updated successfully",
+      user: {
+        id: updatedUser.member_id,
+        username: updatedUser.username,
+        profile_picture: updatedUser.profile_picture,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      status: "error",
+      message: "Server error",
+    });
+  }
+};
