@@ -40,6 +40,8 @@ model Borrowing {
   due_date    DateTime  
   return_date DateTime?
   status      Status
+  fine         Float?    @default(0.0) 
+  fine_per_day Float     @default(10.0) 
   book        Book      @relation(fields: [book_id], references: [book_id], onDelete: Cascade)
   member      Member    @relation(fields: [member_id], references: [member_id], onDelete: Cascade)
 }

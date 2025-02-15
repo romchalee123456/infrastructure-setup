@@ -4,19 +4,11 @@ const API_BASE_URL = "http://localhost:5000";
 const getSevenDay = () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
 const authService = {
-  async register(username, password, first_name, last_name, email, phone_number) {
+  async register(formData) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, { 
-        username, 
-        password, 
-        first_name, 
-        last_name, 
-        email, 
-        phone_number
-      });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, formData);
       return response.data;
     } catch (error) {
-      console.error('Error during registration:', error);
       throw error;
     }
   },

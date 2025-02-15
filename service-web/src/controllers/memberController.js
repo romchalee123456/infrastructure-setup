@@ -1,12 +1,12 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const { hashPassword } = require("../util/password");
+const { addProxyToImages } = require("../middlewares/addProxyToImages");
 
 exports.addMember = async (req, res) => {
-    const { username, password, first_name, last_name, email, phone_number, role } = req.body;
+    const { username, password, first_name, last_name, email, phone_number, role, profile_picture } = req.body;
   
     try {
-
       if (req.user.role !== "admin") {
         return res.status(403).send({
           status: "error",
@@ -20,7 +20,7 @@ exports.addMember = async (req, res) => {
           message: "Only admins can add another admin.",
         });
       }
-
+  
       const hashedPassword = await hashPassword(password);
   
       const result = await prisma.member.create({
@@ -33,12 +33,13 @@ exports.addMember = async (req, res) => {
           phone_number,
           role: role || "user", 
           membership_date: new Date(), 
+          profile_picture,
         },
       });
   
       res.status(201).send({
         status: "success",
-        data: result,
+        data: addProxyToImages(result, ["profile_picture"]),
       });
     } catch (err) {
       console.error(err);
@@ -51,7 +52,7 @@ exports.addMember = async (req, res) => {
 
 exports.updateMember = async (req, res) => {
   const { id } = req.params;
-  const { username, first_name, last_name, email, phone_number } = req.body;
+  const { username, first_name, last_name, email, phone_number, profile_picture } = req.body;
   try {
     const result = await prisma.member.update({
       where: { member_id: Number(id) },
@@ -61,12 +62,13 @@ exports.updateMember = async (req, res) => {
         last_name,
         email,
         phone_number,
+        profile_picture,
       },
     });
 
     res.status(200).send({
       status: "success",
-      data: result,
+      data: addProxyToImages(result, ["profile_picture"]),
     });
   } catch (err) {
     console.error(err);
@@ -109,7 +111,7 @@ exports.getAllMember = async (req, res) => {
 
     res.status(200).send({
       status: "success",
-      data: data,
+      data: data.map(member => addProxyToImages(member, ["profile_picture"])),
     });
   } catch (err) {
     console.error(err);
@@ -136,7 +138,7 @@ exports.getMemberById = async (req, res) => {
 
     res.status(200).send({
       status: "success",
-      data: data,
+      data: addProxyToImages(data, ["profile_picture"]),
     });
   } catch (err) {
     console.error(err);
@@ -168,46 +170,13 @@ exports.getMemberByUsername = async (req, res) => {
 
     res.status(200).send({
       status: "success",
-      data: data,
+      data: data.map(member => addProxyToImages(member, ["profile_picture"])),
     });
   } catch (err) {
     console.error(err);
     res.status(500).send({
       status: "error",
       message: err.message,
-    });
-  }
-};
-exports.updateProfilePicture = async (req, res) => {
-  const { member_id } = req.user;
-  const { profile_picture } = req.body;
-  try {
-    if (!profile_picture) {
-      return res.status(400).send({
-        status: "error",
-        message: "Profile picture URL is required",
-      });
-    }
-
-    const updatedUser = await prisma.member.update({
-      where: { member_id },
-      data: { profile_picture },
-    });
-
-    res.status(200).send({
-      status: "success",
-      message: "Profile picture updated successfully",
-      user: {
-        id: updatedUser.member_id,
-        username: updatedUser.username,
-        profile_picture: updatedUser.profile_picture,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({
-      status: "error",
-      message: "Server error",
     });
   }
 };

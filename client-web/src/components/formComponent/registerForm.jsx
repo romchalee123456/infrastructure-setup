@@ -1,7 +1,6 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
-import { FaUser, FaLock } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom"; 
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -13,21 +12,25 @@ const RegisterForm = () => {
     password: '',
   });
 
+  const [error, setError] = useState(""); 
+  const navigate = useNavigate(); 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); 
+
     try {
-      const response = await fetch('/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      if (response.ok) {
-        console.log('Registration successful');
+      const response = await authService.register(formData);
+      
+      if (response?.status === "success") {
+        console.log("Registration successful");
+        navigate("/login"); 
+      } else {
+        setError(response?.message || "Registration failed.");
       }
     } catch (error) {
-      console.error('Registration failed:', error);
+      console.error("Registration failed:", error);
+      setError("Server error, please try again later.");
     }
   };
 
@@ -42,6 +45,9 @@ const RegisterForm = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-3xl font-bold mb-6 text-center">Sign Up</h2>
+
+        {error && <p className="text-red-500 text-sm text-center">{error}</p>} {/* ✅ แสดง Error */}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -67,7 +73,7 @@ const RegisterForm = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
@@ -79,7 +85,7 @@ const RegisterForm = () => {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Phone Number</label>
             <input
@@ -91,7 +97,7 @@ const RegisterForm = () => {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Username</label>
             <input
@@ -103,7 +109,7 @@ const RegisterForm = () => {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <input
@@ -115,7 +121,7 @@ const RegisterForm = () => {
               required
             />
           </div>
-          
+
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -123,9 +129,9 @@ const RegisterForm = () => {
             Sign Up
           </button>
         </form>
-        
+
         <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link to="/login" className="text-blue-500 hover:text-blue-600">
             Log in
           </Link>
@@ -136,3 +142,4 @@ const RegisterForm = () => {
 };
 
 export default RegisterForm;
+

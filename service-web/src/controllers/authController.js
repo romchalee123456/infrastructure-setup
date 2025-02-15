@@ -9,27 +9,22 @@ const prisma = new PrismaClient();
 
 exports.register = async (req, res) => {
   try {
-    const { username, password, first_name, last_name, email, phone_number } =
-      req.body;
+    const { username, password, first_name, last_name, email, phone_number } = req.body;
+    if (!username || !password || !email) {
+      return res.status(400).json({ status: "error", message: "Missing required fields" });
+    }
 
-    const existingUser = await prisma.member.findUnique({
-      where: { username },
-    });
+    const existingUser = await prisma.member.findUnique({ where: { username } });
     if (existingUser) {
-      return res
-        .status(400)
-        .send({ status: "error", message: "Username is already taken" });
+      return res.status(400).json({ status: "error", message: "Username is already taken" });
     }
 
     const existingEmail = await prisma.member.findUnique({ where: { email } });
     if (existingEmail) {
-      return res
-        .status(400)
-        .send({ status: "error", message: "Email is already registered" });
+      return res.status(400).json({ status: "error", message: "Email is already registered" });
     }
 
     const hashedPassword = await hashPassword(password);
-
     const newUser = await prisma.member.create({
       data: {
         username,
@@ -44,10 +39,7 @@ exports.register = async (req, res) => {
       },
     });
 
-    const accessToken = generateToken(newUser);
-    const refreshToken = generateRefreshToken(newUser);
-
-    res.status(201).send({
+    res.status(201).json({
       status: "success",
       message: "User registered successfully",
       user: {
@@ -57,17 +49,10 @@ exports.register = async (req, res) => {
         last_name: newUser.last_name,
         email: newUser.email,
         phone_number: newUser.phone_number,
-        profile_picture: newUser.profile_picture, // ค่าเริ่มต้นเป็น null
       },
-      accessToken,
-      refreshToken,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).send({
-      status: "error",
-      message: "Server error",
-    });
+    res.status(500).json({ status: "error", message: "Server error", details: error.message });
   }
 };
 

@@ -191,3 +191,23 @@ exports.getBooksStatus = async (req, res) => {
     });
   }
 };
+
+exports.calculateFine = async (borrow_id) => {
+  const borrowing = await prisma.borrowing.findUnique({
+    where: { borrow_id },
+  });
+
+  if (!borrowing || !borrowing.due_date || borrowing.status === "returned") return;
+
+  if (borrowing.return_date && borrowing.return_date > borrowing.due_date) {
+    const overdueDays = Math.ceil(
+      (borrowing.return_date.getTime() - borrowing.due_date.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const fineAmount = overdueDays * (borrowing.fine_per_day ?? 10);
+
+    await prisma.borrowing.update({
+      where: { borrow_id },
+      data: { fine: fineAmount },
+    });
+  }
+};
