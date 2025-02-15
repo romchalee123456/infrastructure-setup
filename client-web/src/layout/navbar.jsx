@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Mail, User, BookOpen, Users } from "lucide-react";
+import { Search, Mail, User, BookOpen, Users, Library, History} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = ({ setIsAuthenticated }) => {
@@ -7,30 +7,36 @@ const Navbar = ({ setIsAuthenticated }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // ลบ token
-    setIsAuthenticated(false); // อัปเดต state
-    navigate("/login"); // ไปหน้า login
+    localStorage.removeItem("token"); 
+    setIsAuthenticated(false); 
+    navigate("/login"); 
   };
 
   return (
     <nav className="bg-gray-800 text-white p-4">
       <div className="container mx-auto flex items-center justify-between">
-        {/* เมนูหลัก */}
         <div className="flex items-center space-x-6">
-          <Link to="/" className="text-xl font-bold">Library</Link>
-          <Link to="/books" className="hover:text-gray-300 flex items-center gap-2">
+          <Link to="/" className="hover:text-gray-300 flex items-center gap-2">
             <BookOpen size={20} />
             Books
           </Link>
-          <Link to="/authors" className="hover:text-gray-300 flex items-center gap-2">
-            <Users size={20} />
-            Authors
-          </Link>
+          <Link to="/manage-book" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800">
+          <Library size={20} />
+          <span>Manage Book</span>
+        </Link>
+        
+        <Link to="/manage-user" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800">
+          <Users size={20} />
+          <span>Manage Member</span>
+        </Link>
+        
+        <Link to="/borrow-history" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800">
+          <History size={20} />
+          <span>Borrow History</span>
+        </Link>
         </div>
 
-        {/* เมนูขวา */}
         <div className="flex items-center space-x-6">
-          {/* Search Box */}
           <div className="relative">
             <input
               type="text"
@@ -40,12 +46,11 @@ const Navbar = ({ setIsAuthenticated }) => {
             <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
           </div>
 
-          {/* Messages */}
+
           <Link to="/messages" className="hover:text-gray-300">
             <Mail size={24} />
           </Link>
 
-          {/* User Dropdown */}
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -55,11 +60,10 @@ const Navbar = ({ setIsAuthenticated }) => {
               <User size={24} className="hover:text-gray-300" />
             </button>
 
-            {/* Dropdown Menu */}
             {isDropdownOpen && (
               <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded-lg shadow-lg">
                 <Link
-                  to="/profile"
+                  to="/manage-profile"
                   className="block px-4 py-2 hover:bg-gray-200"
                   onClick={() => setIsDropdownOpen(false)}
                 >

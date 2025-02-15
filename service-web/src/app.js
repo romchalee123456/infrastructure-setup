@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require("axios");
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -42,5 +43,17 @@ app.use((err, req, res, next) => {
     });
 });
 
+app.get("/proxy", async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).send("Missing URL");
+
+  try {
+      const response = await axios.get(url, { responseType: "arraybuffer" });
+      res.setHeader("Content-Type", "image/jpeg"); 
+      res.send(response.data);
+  } catch (error) {
+      res.status(500).send("Error fetching image");
+  }
+});
 
 module.exports = app;

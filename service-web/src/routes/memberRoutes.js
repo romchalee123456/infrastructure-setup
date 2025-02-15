@@ -40,12 +40,4 @@ router
   );
 
 
-  router
-  .route("/updateProfilePicture")
-  .put(
-    authorization, 
-    asyncHandler(authController.updateProfilePicture)
-  );
-
-
 module.exports = router;

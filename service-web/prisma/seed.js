@@ -16,7 +16,7 @@ async function main() {
       phone_number: '1234567890',
       role: 'admin',
       membership_date: new Date(),
-      profile_image: 'https://i.pravatar.cc/150?img=1' // รูปโปรไฟล์ตัวอย่าง
+      profile_image: 'https://i.pravatar.cc/150?img=1' 
     },
   });
 
@@ -27,7 +27,7 @@ async function main() {
       category: 'Novel', 
       total_copies: 10, 
       available_copies: 10,
-      cover_image: 'https://m.media-amazon.com/images/I/81xXAyP9D-L.jpg'
+      cover_image: 'https://media.the101.world/wp-content/uploads/2022/05/05143815/20220521-Nara_-fb-scaled.webp'
     },
     { 
       title: 'To Kill a Mockingbird', 
@@ -35,7 +35,7 @@ async function main() {
       category: 'Fiction', 
       total_copies: 8, 
       available_copies: 8,
-      cover_image: 'https://m.media-amazon.com/images/I/81OtwZ2Rp3L.jpg'
+      cover_image: 'https://d32vymxhv9fq6b.cloudfront.net/images/books/large/97817/9781784870799.jpg'
     },
     { 
       title: '1984', 
@@ -43,7 +43,7 @@ async function main() {
       category: 'Dystopian', 
       total_copies: 12, 
       available_copies: 12,
-      cover_image: 'https://m.media-amazon.com/images/I/71kxa1-0FYL.jpg'
+      cover_image: 'https://api.chulabook.com/images/pid-103136.jpg'
     },
     { 
       title: 'Pride and Prejudice', 
@@ -51,7 +51,7 @@ async function main() {
       category: 'Classic', 
       total_copies: 5, 
       available_copies: 5,
-      cover_image: 'https://m.media-amazon.com/images/I/81z1SxX9QQL.jpg'
+      cover_image: 'https://bci.kinokuniya.com/th/jsp/images/book-img/97861/97861650/9786165087575.JPG'
     },
     { 
       title: 'The Catcher in the Rye', 
@@ -59,7 +59,7 @@ async function main() {
       category: 'Fiction', 
       total_copies: 7, 
       available_copies: 7,
-      cover_image: 'https://m.media-amazon.com/images/I/71YKQ+Xlb5L.jpg'
+      cover_image: 'https://www.asiabooks.com/media/catalog/product/cache/a5ac216be58c0cbce1cb04612ece96dc/1/0/1000237540_front_xxxl_114.jpg'
     },
     { 
       title: 'The Hobbit', 
@@ -67,7 +67,7 @@ async function main() {
       category: 'Fantasy', 
       total_copies: 15, 
       available_copies: 15,
-      cover_image: 'https://m.media-amazon.com/images/I/81t2CVWEsUL.jpg'
+      cover_image: 'https://bci.kinokuniya.com/jsp/images/book-img/97897/97897424/9789742474522.JPG'
     },
     { 
       title: 'Moby-Dick', 
@@ -75,7 +75,7 @@ async function main() {
       category: 'Adventure', 
       total_copies: 6, 
       available_copies: 6,
-      cover_image: 'https://m.media-amazon.com/images/I/81dqXQx9KoL.jpg'
+      cover_image: 'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSDjHA3lrq4HH69Xr-1KpB59A-JZGUaFsvqXdFTi7aAZaOtP9Iz'
     },
     { 
       title: 'War and Peace', 
@@ -83,7 +83,7 @@ async function main() {
       category: 'Historical', 
       total_copies: 9, 
       available_copies: 9,
-      cover_image: 'https://m.media-amazon.com/images/I/81R+4+dFJYL.jpg'
+      cover_image: 'https://bci.kinokuniya.com/jsp/images/book-img/97861/97861651/9786165144629.JPG'
     },
     { 
       title: 'The Odyssey', 
@@ -91,7 +91,7 @@ async function main() {
       category: 'Epic', 
       total_copies: 4, 
       available_copies: 4,
-      cover_image: 'https://m.media-amazon.com/images/I/81rlXRPcvQL.jpg'
+      cover_image: 'https://kledthai.com/pub/media/catalog/product/cache/ec9bc38d41dea32eed9dacd87373392e/2/2/221628-7M4vUQUdrBRapJxNCmFKyL.jpg'
     },
     { 
       title: 'The Divine Comedy', 
@@ -99,7 +99,7 @@ async function main() {
       category: 'Epic', 
       total_copies: 3, 
       available_copies: 3,
-      cover_image: 'https://m.media-amazon.com/images/I/71udO5rs8hL.jpg'
+      cover_image: 'https://f.ptcdn.info/745/066/000/q0ht7h37d6OeR7CsvUU5-o.jpg'
     },
   ];
 
