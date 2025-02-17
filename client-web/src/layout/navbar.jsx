@@ -38,25 +38,10 @@ const Navbar = ({ setIsAuthenticated }) => {
 
         <div className="flex items-center space-x-6">
           <div className="relative">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="bg-gray-700 text-white px-4 py-2 rounded-lg pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
-          </div>
-
-
-          <Link to="/messages" className="hover:text-gray-300">
-            <Mail size={24} />
-          </Link>
-
-          <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center space-x-2 focus:outline-none"
             >
-              <span className="hover:text-gray-300">Username</span>
               <User size={24} className="hover:text-gray-300" />
             </button>
 

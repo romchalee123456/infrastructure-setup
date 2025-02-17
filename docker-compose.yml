@@ -1,4 +1,4 @@
-# version: '3.8'
+version: '3.8'
 
 services:
   postgres:
@@ -13,9 +13,11 @@ services:
       POSTGRES_DB: mydatabase
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - default
 
   service-web:
-    build: .
+    build: ./service-web # ✅ ชี้ไปที่โฟลเดอร์ `service-web`
     container_name: my_service_web
     restart: always
     ports:
@@ -24,8 +26,12 @@ services:
       - postgres
     environment:
       DATABASE_URL: "postgresql://myuser:mypassword@postgres:5432/mydatabase"
+    networks:
+      - default
 
 volumes:
   postgres_data:
 
-
+networks:
+  default:
+    driver: bridge

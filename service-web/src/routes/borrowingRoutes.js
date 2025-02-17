@@ -5,7 +5,7 @@ const { asyncHandler } = require("../middlewares/asyncHandler");
 const authorization = require("../middlewares/authorization");
 
 router
-  .route("/borrowBook/:id")
+  .route("/borrowBook/:book_id")  
   .post(
     asyncHandler(authorization),
     asyncHandler(borrowingController.borrowBook)
@@ -13,13 +13,13 @@ router
 
 router
   .route("/returnBook/:borrow_id")
-  .put(
+  .put(  
     asyncHandler(authorization),
     asyncHandler(borrowingController.returnBook)
   );
 
 router
-  .route("/getBorrowingHistoryAll/:member_id")
+  .route("/getBorrowingHistoryAll/")
   .get(
     asyncHandler(authorization),
     asyncHandler(borrowingController.getBorrowingHistoryAll)
@@ -38,9 +38,10 @@ router
     asyncHandler(authorization),
     asyncHandler(borrowingController.getBooksStatus)
   );
+
 router
   .route("/calculateFine/:borrow_id")
-  .get(
+  .put(  
     asyncHandler(authorization),
     asyncHandler(borrowingController.calculateFine)
   );

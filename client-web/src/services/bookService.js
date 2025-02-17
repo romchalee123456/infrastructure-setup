@@ -17,7 +17,7 @@ const bookService = {
         const res = await http.delete(`/api/book/deleteBookById/${id}`);
         return res.data;
     },
-    async updateBookById(data, id) {
+    async updateBookById(id,data ) {
         const res = await http.put(`/api/book/updateBookById/${id}`, data);
         return res.data;
     },

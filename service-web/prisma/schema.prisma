@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Book {
+model book {
   book_id          Int         @id @default(autoincrement())
   title            String     
   author           String     
@@ -15,10 +15,10 @@ model Book {
   total_copies     Int         @default(0)
   available_copies Int         @default(0)
   cover_image      String?     
-  Borrowings       Borrowing[]
+  Borrowings       borrowing[]
 }
 
-model Member {
+model member {
   member_id       Int         @id @default(autoincrement())
   username        String      @unique
   password        String      
@@ -26,32 +26,32 @@ model Member {
   last_name       String      
   email           String      @unique
   phone_number    String      
-  role            Role
+  role            role
   membership_date DateTime    
   profile_image   String?    
-  Borrowings      Borrowing[]
+  Borrowings      borrowing[]
 }
 
-model Borrowing {
+model borrowing {
   borrow_id   Int       @id @default(autoincrement())
   member_id   Int
   book_id     Int
   borrow_date DateTime  
   due_date    DateTime  
   return_date DateTime?
-  status      Status
+  status      status
   fine         Float?    @default(0.0) 
   fine_per_day Float     @default(10.0) 
-  book        Book      @relation(fields: [book_id], references: [book_id], onDelete: Cascade)
-  member      Member    @relation(fields: [member_id], references: [member_id], onDelete: Cascade)
+  book        book      @relation(fields: [book_id], references: [book_id], onDelete: Cascade)
+  member      member    @relation(fields: [member_id], references: [member_id], onDelete: Cascade)
 }
 
-enum Role {
+enum role {
   admin
   user
 }
 
-enum Status {
+enum status {
   borrowed
   returned
 }
