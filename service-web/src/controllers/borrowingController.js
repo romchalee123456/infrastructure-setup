@@ -251,40 +251,31 @@ exports.calculateFine = async (req, res) => {
 
   try {
     const borrowing = await prisma.borrowing.findUnique({
-      where: { id: borrow_id },
+      where: { borrow_id: Number(borrow_id) },
     });
 
-    if (!borrowing || !borrowing.due_date || borrowing.status === "returned") {
+    if (!borrowing || !borrowing.due_date) {
       return res.status(404).send({
         status: "error",
-        message: "Borrowing record not found or already returned",
+        message: "Borrowing record not found",
       });
     }
 
-    if (borrowing.return_date && borrowing.return_date > borrowing.due_date) {
+    let fineAmount = 0;
+
+    if (borrowing.return_date && new Date(borrowing.return_date) > new Date(borrowing.due_date)) {
       const overdueDays = Math.ceil(
-        (borrowing.return_date.getTime() - borrowing.due_date.getTime()) /
+        (new Date(borrowing.return_date).getTime() - new Date(borrowing.due_date).getTime()) /
           (1000 * 60 * 60 * 24)
       );
-      const fineAmount = overdueDays * (borrowing.fine_per_day ?? 10);
-
-      await prisma.borrowing.update({
-        where: { id: borrow_id },
-        data: { fine: fineAmount },
-      });
-
-      res.status(200).send({
-        status: "success",
-        message: `Fine calculated: ${fineAmount}`,
-        data: { fine: fineAmount },
-      });
-    } else {
-      res.status(200).send({
-        status: "success",
-        message: "No fine due",
-        data: { fine: 0 },
-      });
+      fineAmount = overdueDays * (borrowing.fine_per_day ?? 10);
     }
+
+    res.status(200).send({
+      status: "success",
+      message: `Fine calculated: ${fineAmount}`,
+      data: { fine: fineAmount },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send({
@@ -293,3 +284,4 @@ exports.calculateFine = async (req, res) => {
     });
   }
 };
+

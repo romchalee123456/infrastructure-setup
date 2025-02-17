@@ -39,9 +39,9 @@ router
     asyncHandler(borrowingController.getBooksStatus)
   );
 
-router
+  router
   .route("/calculateFine/:borrow_id")
-  .put(  
+  .put(
     asyncHandler(authorization),
     asyncHandler(borrowingController.calculateFine)
   );

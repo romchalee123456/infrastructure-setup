@@ -18,7 +18,7 @@ const LoginForm = ({ setIsAuthenticated }) => {
       localStorage.setItem("token", data.accessToken); 
       localStorage.setItem("member_id", data.member_id);
       localStorage.setItem("username", data.username);
-      localStorage.setItem("isAuthenticated", "true"); // Store authentication status
+      localStorage.setItem("isAuthenticated", "true"); 
       localStorage.setItem("profile_image", data.profile_image);
       setIsAuthenticated(true); 
       navigate("/"); 

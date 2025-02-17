@@ -6,16 +6,14 @@ import withReactContent from "sweetalert2-react-content";
 
 export function HistoryBorrowing() {
   const [historyList, setHistoryList] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // เพิ่ม searchQuery
+  const [searchQuery, setSearchQuery] = useState(""); 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(15);
 
-  // ฟังก์ชันดึงข้อมูล
   async function fetchHistory() {
     try {
       const response = await borrowingService.getBorrowingHistoryAll();
       setHistoryList(response.data);
-      console.log(historyList)
     } catch (error) {
       console.error("Error fetching history:", error);
     }
@@ -25,15 +23,13 @@ export function HistoryBorrowing() {
     fetchHistory();
   }, []);
 
-  // กรองข้อมูลตาม searchQuery
   const filteredHistorys = historyList
-  .filter(
-    (borrow) =>
-      borrow.book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      borrow.status.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    .filter(
+      (borrow) =>
+        borrow.book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        borrow.status.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-  // คำนวณการแบ่งหน้า
   const indexOfLastHistory = currentPage * itemsPerPage;
   const indexOfFirstHistory = indexOfLastHistory - itemsPerPage;
   const currentHistorys = filteredHistorys.slice(indexOfFirstHistory, indexOfLastHistory);
@@ -44,49 +40,42 @@ export function HistoryBorrowing() {
   const handleReturn = async (borrow_id) => {
     try {
       const response = await borrowingService.returnBook(borrow_id);
-   if (response.status === "success") {
-           await fetchHistory();
-           withReactContent(Swal)
-             .fire({
-               title: <i>Save Success</i>,
-               icon: "success",
-               showCancelButton: false,
-               confirmButtonText: "Ok",
-             })
-             .then((result) => {
-               if (result.isConfirmed) {
-               }
-             });
-         } else {
-           withReactContent(Swal)
-             .fire({
-               title: <i>Failed to save user details.</i>,
-               icon: "warning",
-               showCancelButton: false,
-               confirmButtonText: "Ok",
-             })
-             .then((result) => {
-               if (result.isConfirmed) {
-               }
-             });
-         }
-       } catch (error) {
-         console.error("Error return:", error);
-         console.log(error.response.data.message);
-         withReactContent(Swal)
-           .fire({
-             title: <i>{error.response.data.message}</i>,
-             icon: "warning",
-             showCancelButton: false,
-             confirmButtonText: "Ok",
-           })
-           .then((result) => {
-             if (result.isConfirmed) {
-             }
-           });
-       }
-     };
-   
+      if (response.status === "success") {
+        const fineResponse = await borrowingService.calculateFine(borrow_id);
+        if (fineResponse.status === "success") {
+          await fetchHistory(); 
+          withReactContent(Swal)
+            .fire({
+              title: <i>Save Success</i>,
+              icon: "success",
+              showCancelButton: false,
+              confirmButtonText: "Ok",
+            })
+            .then((result) => {
+              if (result.isConfirmed) {
+              }
+            });
+        } else {
+          throw new Error(fineResponse.message);
+        }
+      } else {
+        throw new Error("ไม่สามารถคืนหนังสือได้");
+      }
+    } catch (error) {
+      console.error("Error return:", error);
+      withReactContent(Swal)
+        .fire({
+          title: <i>{error.message}</i>,
+          icon: "warning",
+          showCancelButton: false,
+          confirmButtonText: "Ok",
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+          }
+        });
+    }
+  };
 
   return (
     <div className="text-slate-600 leading-normal font-light">
@@ -113,7 +102,7 @@ export function HistoryBorrowing() {
           </thead>
           <tbody>
             {currentHistorys.map((borrow) => (
-              <tr key={borrow.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+              <tr key={borrow.book_id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <td className="px-6 py-4 text-center">{borrow.book.title}</td>
                 <td className="px-6 py-4 text-center">{new Date(borrow.borrow_date).toLocaleDateString()}</td>
                 <td className="px-6 py-4 text-center">{new Date(borrow.due_date).toLocaleDateString()}</td>
@@ -122,14 +111,14 @@ export function HistoryBorrowing() {
                 <td className="px-6 py-4 text-center">{borrow.member.username}</td>
                 <td className="px-6 py-4 text-center">
                   <div className="flex items-center justify-center gap-5">
-                   {borrow.status == "borrowed" && ( 
-                    <button
-                      onClick={() => handleReturn(borrow.borrow_id)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Return Book
-                    </button>)} 
-                   
+                    {borrow.status === "borrowed" && (
+                      <button
+                        onClick={() => handleReturn(borrow.borrow_id)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Return Book
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
