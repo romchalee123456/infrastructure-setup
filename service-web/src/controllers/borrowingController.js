@@ -2,20 +2,37 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 exports.borrowBook = async (req, res) => {
-  const { id: book_id } = req.params;
+  const { book_id } = req.params;
   const { member_id, due_date } = req.body;
+
   try {
+    // แก้ไขการใช้งาน id ที่ไม่ถูกต้อง
     const book = await prisma.book.findUnique({
-      where: { id: book_id },
+      where: { book_id: Number(book_id) }, // ใช้ id ที่ถูกต้อง
     });
     const member = await prisma.member.findUnique({
-      where: { id: member_id },
+      where: { member_id: Number(member_id) }, // ใช้ id ที่ถูกต้อง
     });
 
     if (!book || !member) {
       return res.status(404).send({
         status: "error",
         message: "Book or Member not found",
+      });
+    }
+
+    const existingBorrow = await prisma.borrowing.findFirst({
+      where: {
+        member_id: Number(member_id),
+        book_id: Number(book_id),
+        status: "borrowed",
+      },
+    });
+
+    if (existingBorrow) {
+      return res.status(400).send({
+        status: "error",
+        message: "You have already borrowed this book",
       });
     }
 
@@ -26,18 +43,26 @@ exports.borrowBook = async (req, res) => {
       });
     }
 
+    const parsedDueDate = new Date(due_date);
+    if (isNaN(parsedDueDate)) {
+      return res.status(400).send({
+        status: "error",
+        message: "Invalid due date",
+      });
+    }
+
     const result = await prisma.borrowing.create({
       data: {
-        member_id,
-        book_id,
+        member_id: Number(member_id),
+        book_id: Number(book_id),
         borrow_date: new Date(),
-        due_date: new Date(due_date),
+        due_date: parsedDueDate,
         status: "borrowed",
       },
     });
 
     await prisma.book.update({
-      where: { id: book_id },
+      where: { book_id: Number(book_id) }, // ใช้ id ที่ถูกต้อง
       data: { available_copies: book.available_copies - 1 },
     });
 
@@ -60,7 +85,7 @@ exports.returnBook = async (req, res) => {
 
   try {
     const borrowRecord = await prisma.borrowing.findUnique({
-      where: { id: borrow_id },
+      where: { borrow_id: Number(borrow_id) },
       include: { book: true },
     });
 
@@ -82,12 +107,12 @@ exports.returnBook = async (req, res) => {
     borrowRecord.return_date = new Date();
 
     await prisma.book.update({
-      where: { id: borrowRecord.book_id },
+      where: { book_id: borrowRecord.book_id },
       data: { available_copies: borrowRecord.book.available_copies + 1 },
     });
 
     const result = await prisma.borrowing.update({
-      where: { id: borrow_id },
+      where: { borrow_id: Number(borrow_id) },
       data: { status: "returned", return_date: new Date() },
     });
 
@@ -106,24 +131,53 @@ exports.returnBook = async (req, res) => {
 };
 
 exports.getBorrowingHistoryAll = async (req, res) => {
-  const { member_id } = req.params;
+  const member_id = req.currentUserId;
   try {
-    const result = await prisma.borrowing.findMany({
-      where: { member_id },
-      include: { book: true },
+    const resultmember = await prisma.member.findUnique({
+      where: { member_id: req.currentUserId },
     });
 
-    if (!result || result.length === 0) {
-      return res.status(404).send({
-        status: "error",
-        message: "No borrowing history found",
+    if (!resultmember.user || resultmember.role !== "admin") {
+      const result = await prisma.borrowing.findMany({
+        include: { 
+          book: true ,
+          member: true
+        },
+      });
+
+      if (!result || result.length === 0) {
+        return res.status(404).send({
+          status: "error",
+          message: "No borrowing history found",
+        });
+      }
+
+      res.status(200).send({
+        status: "success",
+        data: result,
+
+      });
+    } else {
+      const result = await prisma.borrowing.findMany({
+        where: { member_id: Number(member_id) },
+        include: { 
+          book: true ,
+          member: true
+        },
+      });
+
+      if (!result || result.length === 0) {
+        return res.status(404).send({
+          status: "error",
+          message: "No borrowing history found",
+        });
+      }
+
+      res.status(200).send({
+        status: "success",
+        data: result,
       });
     }
-
-    res.status(200).send({
-      status: "success",
-      data: result,
-    });
   } catch (error) {
     console.error(error);
     res.status(500).send({
@@ -192,22 +246,50 @@ exports.getBooksStatus = async (req, res) => {
   }
 };
 
-exports.calculateFine = async (borrow_id) => {
-  const borrowing = await prisma.borrowing.findUnique({
-    where: { borrow_id },
-  });
+exports.calculateFine = async (req, res) => {
+  const { borrow_id } = req.params;
 
-  if (!borrowing || !borrowing.due_date || borrowing.status === "returned") return;
+  try {
+    const borrowing = await prisma.borrowing.findUnique({
+      where: { id: borrow_id },
+    });
 
-  if (borrowing.return_date && borrowing.return_date > borrowing.due_date) {
-    const overdueDays = Math.ceil(
-      (borrowing.return_date.getTime() - borrowing.due_date.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const fineAmount = overdueDays * (borrowing.fine_per_day ?? 10);
+    if (!borrowing || !borrowing.due_date || borrowing.status === "returned") {
+      return res.status(404).send({
+        status: "error",
+        message: "Borrowing record not found or already returned",
+      });
+    }
 
-    await prisma.borrowing.update({
-      where: { borrow_id },
-      data: { fine: fineAmount },
+    if (borrowing.return_date && borrowing.return_date > borrowing.due_date) {
+      const overdueDays = Math.ceil(
+        (borrowing.return_date.getTime() - borrowing.due_date.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+      const fineAmount = overdueDays * (borrowing.fine_per_day ?? 10);
+
+      await prisma.borrowing.update({
+        where: { id: borrow_id },
+        data: { fine: fineAmount },
+      });
+
+      res.status(200).send({
+        status: "success",
+        message: `Fine calculated: ${fineAmount}`,
+        data: { fine: fineAmount },
+      });
+    } else {
+      res.status(200).send({
+        status: "success",
+        message: "No fine due",
+        data: { fine: 0 },
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      status: "error",
+      message: "Server error",
     });
   }
 };

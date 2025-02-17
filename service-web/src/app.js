@@ -43,17 +43,9 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.get("/proxy", async (req, res) => {
-  const { url } = req.query;
-  if (!url) return res.status(400).send("Missing URL");
+const PORT = process.env.PORT || 3000;
 
-  try {
-      const response = await axios.get(url, { responseType: "arraybuffer" });
-      res.setHeader("Content-Type", "image/jpeg"); 
-      res.send(response.data);
-  } catch (error) {
-      res.status(500).send("Error fetching image");
-  }
+app.listen(PORT, () => {
+    console.log(`Running on PORT ${PORT}`);
 });
-
 module.exports = app;

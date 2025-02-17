@@ -4,17 +4,23 @@ FROM node:22
 # ตั้งค่าตำแหน่งทำงานเป็น /app
 WORKDIR /app
 
-# คัดลอก package.json และติดตั้ง dependencies
+# คัดลอก package.json และ package-lock.json ไปที่ container
 COPY package.json package-lock.json ./
+
+# ติดตั้ง dependencies
 RUN npm install
+
+# คัดลอกโฟลเดอร์ prisma เข้าไปใน container
+COPY prisma ./prisma
 
 # คัดลอกโค้ดทั้งหมดไปใน container
 COPY . .
+
+
 
 # เปิดพอร์ต 5000
 EXPOSE 5000
 
 # คำสั่งรันเซิร์ฟเวอร์
-CMD ["node", "index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run seed && npm start"]
 
-RUN npx prisma generate  # ✅ สร้าง Prisma Client

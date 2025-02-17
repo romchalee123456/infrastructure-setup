@@ -1,10 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { addProxyToImages } = require("../middlewares/addProxyToImages");
-
-const isValidImageUrl = (url) => {
-  return url && typeof url === "string" && url.startsWith("http");
-};
 
 exports.addBook = async (req, res) => {
   const { title, author, category, total_copies, available_copies, cover_image } = req.body;
@@ -22,13 +17,13 @@ exports.addBook = async (req, res) => {
         category,
         total_copies,
         available_copies,
-        cover_image: isValidImageUrl(cover_image) ? cover_image : null,
+        cover_image,
       },
     });
 
     res.status(201).send({
       status: "success",
-      data: addProxyToImages(result, ["cover_image"]),
+      data: result,
     });
   } catch (err) {
     console.error(err);
@@ -40,9 +35,16 @@ exports.updateBookById = async (req, res) => {
   const { id } = req.params;
   const { title, author, category, total_copies, available_copies, cover_image } = req.body;
 
-  if (!Number.isInteger(total_copies) || total_copies <= 0 ||
-      !Number.isInteger(available_copies) || available_copies < 0 || available_copies > total_copies) {
-    return res.status(400).send({ status: "error", message: "Invalid total_copies or available_copies value" });
+  if (total_copies !== undefined) {
+    if (!Number.isInteger(total_copies) || total_copies <= 0) {
+      return res.status(400).send({ status: "error", message: "Invalid total_copies value" });
+    }
+  }
+
+  if (available_copies !== undefined) {
+    if (!Number.isInteger(available_copies) || available_copies < 0 || available_copies > total_copies) {
+      return res.status(400).send({ status: "error", message: "Invalid available_copies value" });
+    }
   }
 
   try {
@@ -54,13 +56,13 @@ exports.updateBookById = async (req, res) => {
         category,
         total_copies,
         available_copies,
-        cover_image: isValidImageUrl(cover_image) ? cover_image : null,
+        cover_image,
       },
     });
-
+    console.log(result); 
     res.status(200).send({
       status: "success",
-      data: addProxyToImages(result, ["cover_image"]),
+      data: result,
     });
   } catch (err) {
     console.error(err);
@@ -88,7 +90,7 @@ exports.getAllBook = async (req, res) => {
 
     res.status(200).send({
       status: "success",
-      data: data.map(book => addProxyToImages(book, ["cover_image"])),
+      data: data ,
     });
   } catch (err) {
     console.error(err);
@@ -108,7 +110,7 @@ exports.getBookById = async (req, res) => {
 
     res.status(200).send({
       status: "success",
-      data: addProxyToImages(data, ["cover_image"]),
+      data: data,
     });
   } catch (err) {
     console.error(err);
@@ -133,7 +135,7 @@ exports.searchBooks = async (req, res) => {
 
     res.status(200).send({
       status: "success",
-      data: result.map(book => addProxyToImages(book, ["cover_image"])),
+      data: result,
     });
   } catch (err) {
     console.error(err);

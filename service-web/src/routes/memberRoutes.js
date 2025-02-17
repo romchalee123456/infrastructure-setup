@@ -9,7 +9,8 @@ router
   .route("/addMember")
   .post(
     asyncHandler(authorization),
-    asyncHandler(isAdmin, memberController.addMember)
+    asyncHandler(isAdmin),
+    asyncHandler( memberController.addMember)
   );
 
 router

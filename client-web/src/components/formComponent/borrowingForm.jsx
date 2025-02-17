@@ -1,29 +1,62 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import bookService from "../../services/bookService";
+import borrowingService from "../../services/borrowingService";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 export function BorrowingForm({ book, onClose }) {
   const [duration, setDuration] = useState(7);
   const [isLoading, setIsLoading] = useState(false);
+  const MySwal = withReactContent(Swal);
 
   const handleBorrow = async () => {
+    const member_id = localStorage.getItem("member_id");
+    if (!member_id) {
+      MySwal.fire({
+        title: <i>Please log in first</i>,
+        icon: "warning",
+        confirmButtonText: "Ok",
+      });
+      return;
+    }
+
     if (book.available_copies <= 0) {
-      alert("หนังสือเล่มนี้ถูกยืมหมดแล้ว");
+      MySwal.fire({
+        title: <i>Sorry, this book is out of stock</i>,
+        icon: "warning",
+        confirmButtonText: "Ok",
+      });
       return;
     }
 
     setIsLoading(true);
     try {
-      await bookService.borrowBook({
-        book_id: book.book_id,
-        borrow_duration: duration,
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + duration);
+
+      const response = await borrowingService.borrowBook({
+        book_id: book.book_id, 
+        member_id: member_id,   
+        due_date: dueDate.toISOString(), 
       });
 
-      alert("ยืมหนังสือสำเร็จ!");
+      console.log("Data being sent to the server:", response.data);
+
+      MySwal.fire({
+        title: <i>Book borrowed successfully!</i>,
+        icon: "success",
+        confirmButtonText: "Ok",
+      });
       onClose();
     } catch (error) {
       console.error("Error borrowing book:", error);
-      alert("เกิดข้อผิดพลาดในการยืมหนังสือ");
+
+      MySwal.fire({
+        title: <i>Error borrowing book</i>,
+        text: error?.response?.data?.message || "Something went wrong",
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
     } finally {
       setIsLoading(false);
     }

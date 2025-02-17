@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { PlusCircle, Edit2, Trash2, Save, X } from "lucide-react";
+import {
+  PlusCircle,
+  Edit2,
+  Trash2,
+  Save,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import bookService from "../../services/bookService";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 export function BookManagement() {
   const [books, setBooks] = useState([]);
@@ -10,65 +20,72 @@ export function BookManagement() {
   const [bookForm, setBookForm] = useState({
     title: "",
     author: "",
-    isbn: "",
     category: "",
-    coverImage: "",
-    quantity: 1,
-    available: 1,
+    cover_image: "",
+    total_copies: 1,
+    available_copies: 1,
   });
-
-  useEffect(() => {
-    fetchBooks();
-  }, []);
-
-  const fetchBooks = async () => {
-    try {
-      const response = await bookService.getAllBook();
-      if (!Array.isArray(response)) return;
-      setBooks(response);
-    } catch (error) {
-      console.error("Error fetching books:", error);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingBookId) {
-        await bookService.updateBookById(editingBookId, bookForm);
-      } else {
-        await bookService.addBook(bookForm);
-      }
-      closeForm();
-      fetchBooks();
-    } catch (error) {
-      console.error("Error saving book:", error);
-    }
-  };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(15);
+  const MySwal = withReactContent(Swal);
 
   const handleEdit = (book) => {
     setBookForm({
       title: book.title,
       author: book.author,
-      isbn: book.isbn || "",
       category: book.category,
-      coverImage: book.cover_image,
-      quantity: book.total_copies,
-      available: book.available_copies,
+      cover_image: book.cover_image,
+      total_copies: book.total_copies,
+      available_copies: book.available_copies,
     });
     setEditingBookId(book.book_id);
     setIsAddingBook(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this book?")) {
+const handleDelete = async (id) => {
+  MySwal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
       try {
         await bookService.deleteBookById(id);
         fetchBooks();
+
+        MySwal.fire({
+          title: "Deleted!",
+          text: "The book has been deleted.",
+          icon: "success",
+        });
+
       } catch (error) {
         console.error("Error deleting book:", error);
+        MySwal.fire({
+          title: "Error!",
+          text: "Failed to delete book.",
+          icon: "error",
+        });
       }
     }
+  });
+};
+
+
+  const resetForm = () => {
+    setBookForm({
+      title: "",
+      author: "",
+      category: "",
+      cover_image: "",
+      total_copies: 1,
+      available_copies: 1,
+    });
+    setEditingBookId(null);
   };
 
   const openForm = () => {
@@ -81,22 +98,69 @@ export function BookManagement() {
     setIsAddingBook(false);
   };
 
-  const resetForm = () => {
-    setBookForm({
-      title: "",
-      author: "",
-      isbn: "",
-      category: "",
-      coverImage: "",
-      quantity: 1,
-      available: 1,
-    });
-    setEditingBookId(null);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const updatedBookForm = {
+      ...bookForm,
+      total_copies: Number(bookForm.total_copies),
+      available_copies: Number(bookForm.available_copies),
+    };
+  
+    try {
+      if (editingBookId) {
+        await bookService.updateBookById(editingBookId, updatedBookForm);
+      } else {
+        await bookService.addBook(updatedBookForm);
+      }
+  
+      closeForm();
+      fetchBooks();
+  
+      MySwal.fire({
+        title: <i>Save Success</i>,
+        icon: "success",
+        confirmButtonText: "Ok",
+      });
+  
+    } catch (error) {
+      console.error("Error saving book:", error);
+  
+      MySwal.fire({
+        title: <i>Error saving book</i>,
+        text: error.response?.data?.message || "Something went wrong",
+        icon: "warning",
+        confirmButtonText: "Ok",
+      });
+    }
   };
+  
 
   const filteredBooks = books.filter((book) =>
     book.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const handleRowDoubleClick = (bookId) => {
+    const bookToEdit = books.find((book) => book.book_id === bookId);
+    handleEdit(bookToEdit);
+  };
+  const indexOfLastBook = currentPage * itemsPerPage;
+  const indexOfFirstBook = indexOfLastBook - itemsPerPage;
+  const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
+  const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const fetchBooks = async () => {
+    try {
+      const response = await bookService.getAllBook();
+      if (!Array.isArray(response)) return;
+      setBooks(response);
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
 
   return (
     <div className="container mx-auto p-6">
@@ -112,42 +176,223 @@ export function BookManagement() {
             </button>
           )}
         </div>
+        {!isAddingBook && (
+          <input
+            type="text"
+            placeholder="Search by title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 mb-4"
+          />
+        )}
+        {!isAddingBook && (
+          <div className="text-slate-600 leading-normal font-light">
+            <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+              <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">
+                      Title
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      author
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-center">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBooks.map((book) => (
+                    <tr
+                      key={book.book_id}
+                      onDoubleClick={() => handleRowDoubleClick(book.book_id)}
+                      className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                    >
+                      <td className="px-6 py-4">{book.title}</td>
+                      <td className="px-6 py-4">{book.author}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-5">
+                          <button
+                            onClick={() => handleEdit(book)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(book.book_id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="flex justify-center mt-2 mb-2">
+                <button
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="text-gray-700"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
 
-        <input
-          type="text"
-          placeholder="Search by title..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 mb-4"
-        />
+                <div>
+                  <span className="text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                </div>
 
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="text-gray-700"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {isAddingBook ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <input type="text" placeholder="Title" value={bookForm.title} onChange={(e) => setBookForm({ ...bookForm, title: e.target.value })} required className="w-full border rounded-lg px-3 py-2" />
-            <input type="text" placeholder="Author" value={bookForm.author} onChange={(e) => setBookForm({ ...bookForm, author: e.target.value })} required className="w-full border rounded-lg px-3 py-2" />
-            <input type="text" placeholder="ISBN" value={bookForm.isbn} onChange={(e) => setBookForm({ ...bookForm, isbn: e.target.value })} required className="w-full border rounded-lg px-3 py-2" />
-            <input type="text" placeholder="Category" value={bookForm.category} onChange={(e) => setBookForm({ ...bookForm, category: e.target.value })} required className="w-full border rounded-lg px-3 py-2" />
-            <input type="url" placeholder="Cover Image URL" value={bookForm.coverImage} onChange={(e) => setBookForm({ ...bookForm, coverImage: e.target.value })} required className="w-full border rounded-lg px-3 py-2" />
-            <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">{editingBookId ? "Update Book" : "Save Book"}</button>
-            <button type="button" onClick={closeForm} className="bg-gray-300 text-black px-4 py-2 rounded">Cancel</button>
+            <div className="space-y-2">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Title
+              </label>
+              <input
+                type="text"
+                placeholder="Title"
+                value={bookForm.title}
+                onChange={(e) =>
+                  setBookForm({ ...bookForm, title: e.target.value })
+                }
+                required
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="author"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Author
+              </label>
+              <input
+                type="text"
+                placeholder="Author"
+                value={bookForm.author}
+                onChange={(e) =>
+                  setBookForm({ ...bookForm, author: e.target.value })
+                }
+                required
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="category"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Category
+              </label>
+              <input
+                type="text"
+                placeholder="Category"
+                value={bookForm.category}
+                onChange={(e) =>
+                  setBookForm({ ...bookForm, category: e.target.value })
+                }
+                required
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="total_copies"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Quantity
+              </label>
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={bookForm.total_copies}
+                onChange={(e) =>
+                  setBookForm({
+                    ...bookForm,
+                    total_copies: e.target.value,
+                    available_copies: e.target.value,
+                  })
+                }
+                required
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="available_copies"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Available
+              </label>
+              <input
+                type="number"
+                placeholder="Available"
+                value={bookForm.available_copies}
+                required
+                disabled
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="cover_image"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Cover Image URL
+              </label>
+              <input
+                type="url"
+                placeholder="Cover Image URL"
+                value={bookForm.cover_image}
+                onChange={(e) =>
+                  setBookForm({ ...bookForm, cover_image: e.target.value })
+                }
+                required
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="bg-green-500 text-white px-4 py-2 rounded-md mr-3"
+            >
+              {editingBookId ? "Update Book" : "Save Book"}
+            </button>
+            <button
+              type="button"
+              onClick={closeForm}
+              className="bg-gray-300 text-black px-4 py-2 rounded-md"
+            >
+              Cancel
+            </button>
           </form>
-        ) : (
-          <ul>
-            {filteredBooks.map((book) => (
-              <li key={book.book_id} className="border p-4 mb-2 flex justify-between">
-                <span>{book.title} - {book.author}</span>
-                <div>
-                  <button onClick={() => handleEdit(book)} className="bg-blue-500 text-white px-3 py-1 rounded mr-2">Edit</button>
-                  <button onClick={() => handleDelete(book.book_id)} className="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+        ) : null}
       </div>
     </div>
   );
 }
 
 export default BookManagement;
-

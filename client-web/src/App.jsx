@@ -12,36 +12,32 @@ import Profile from "./components/pageComponent/Profile";
 import HistoryBorrowing from "./components/pageComponent/historyBorrowing";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Check localStorage for 'isAuthenticated' status
+    return localStorage.getItem("isAuthenticated") === "true";
+  });
   const [selectedBook, setSelectedBook] = useState(null);
-  const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const storedUser = JSON.parse(localStorage.getItem("user"));
-        if (storedUser?.member_id) {
-          const updatedUser = await memberService.getMemberById(storedUser.member_id);
-          setUser(updatedUser);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-      }
-    };
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    localStorage.setItem("isAuthenticated", "true"); // Store authentication status
+  };
 
-    fetchCurrentUser();
-  }, []);
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.setItem("isAuthenticated", "false"); // Clear authentication status
+  };
 
   return (
     <Router>
       <div className="flex">
         <div className="flex-1">
-          {isAuthenticated && <Navbar setIsAuthenticated={setIsAuthenticated} />}
+          {isAuthenticated && <Navbar setIsAuthenticated={handleLogout} />}
           <div className="p-4">
             <Routes>
               {!isAuthenticated ? (
                 <>
-                  <Route path="/login" element={<LoginForm setIsAuthenticated={setIsAuthenticated} />} />
+                  <Route path="/login" element={<LoginForm setIsAuthenticated={handleLogin} />} />
                   <Route path="/signup" element={<RegisterForm />} />
                   <Route path="*" element={<Navigate to="/login" />} /> 
                 </>
@@ -51,7 +47,7 @@ function App() {
                   <Route path="/manage-book" element={<BookManagement />} />
                   <Route path="/manage-user" element={<MemberManagement />} />
                   <Route path="/borrow-history" element={<HistoryBorrowing />} />
-                  <Route path="/manage-profile" element={<Profile user={user} setUser={setUser} />} />
+                  <Route path="/manage-profile" element={<Profile />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </>
               )}

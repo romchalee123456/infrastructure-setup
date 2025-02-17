@@ -16,6 +16,10 @@ const LoginForm = ({ setIsAuthenticated }) => {
     try {
       const data = await authService.login(formData.username, formData.password);
       localStorage.setItem("token", data.accessToken); 
+      localStorage.setItem("member_id", data.member_id);
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("isAuthenticated", "true"); // Store authentication status
+      localStorage.setItem("profile_image", data.profile_image);
       setIsAuthenticated(true); 
       navigate("/"); 
     } catch (error) {
