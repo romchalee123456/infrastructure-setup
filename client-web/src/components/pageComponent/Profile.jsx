@@ -25,7 +25,6 @@ export function Profile({ setUser }) {
           if (response && response.data) {
             const updatedUser = response.data;
             setUserState(updatedUser); 
-            setUser(updatedUser); 
           }
         } catch (error) {
           console.error("Failed to fetch user data:", error);

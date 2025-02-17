@@ -34,9 +34,15 @@ const  borrowingService = {
   },
 
   async calculateFine(borrow_id) {
-    const res = await http.put(`/api/borrowing/calculateFine/${borrow_id}`); 
-    return res.data;
+    try {
+      const res = await http.put(`/api/borrowing/calculateFine/${borrow_id}`);
+      return res.data;
+    } catch (error) {
+      console.error("Error calculating fine:", error);
+      throw error;
+    }
   }
+  
 };
 
 export default borrowingService;

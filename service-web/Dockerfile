@@ -16,11 +16,11 @@ COPY prisma ./prisma
 # คัดลอกโค้ดทั้งหมดไปใน container
 COPY . .
 
-
+# สร้าง Prisma Client
+RUN npx prisma generate
 
 # เปิดพอร์ต 5000
 EXPOSE 5000
 
 # คำสั่งรันเซิร์ฟเวอร์
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run seed && npm start"]
-
+CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
