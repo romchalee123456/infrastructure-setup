@@ -183,51 +183,66 @@ export function MemberManagement() {
     }
   };
 
-  const handleDelete = async (userId) => {
-    try {
-      const response = await memberService.deleteMemberById(userId);
-      if (response.status === "success") {
-        await fetchMembers();
-        withReactContent(Swal)
-          .fire({
-            title: <i>User deleted successfully</i>,
-            icon: "success",
-            showCancelButton: false,
-            confirmButtonText: "Ok",
-          })
-          .then((result) => {
-            if (result.isConfirmed) {
-              closeModal();
+  const handleDelete = async (userId) => { 
+    withReactContent(Swal)
+      .fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!",
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const response = await memberService.deleteMemberById(userId);
+            if (response.status === "success") {
+              await fetchMembers();
+              withReactContent(Swal)
+                .fire({
+                  title: <i>User deleted successfully</i>,
+                  icon: "success",
+                  showCancelButton: false,
+                  confirmButtonText: "Ok",
+                })
+                .then((result) => {
+                  if (result.isConfirmed) {
+                    closeModal();
+                  }
+                });
+            } else {
+              withReactContent(Swal)
+                .fire({
+                  title: <i>Failed to delete user</i>,
+                  icon: "warning",
+                  showCancelButton: false,
+                  confirmButtonText: "Ok",
+                })
+                .then((result) => {
+                  if (result.isConfirmed) {
+                  }
+                });
             }
-          });
-      } else {
-        withReactContent(Swal)
-          .fire({
-            title: <i>Failed to delete user</i>,
-            icon: "warning",
-            showCancelButton: false,
-            confirmButtonText: "Ok",
-          })
-          .then((result) => {
-            if (result.isConfirmed) {
-            }
-          });
-      }
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      withReactContent(Swal)
-        .fire({
-          title: <i>{error.response.data.message}</i>,
-          icon: "warning",
-          showCancelButton: false,
-          confirmButtonText: "Ok",
-        })
-        .then((result) => {
-          if (result.isConfirmed) {
+          } catch (error) {
+            console.error("Error deleting user:", error);
+            withReactContent(Swal)
+              .fire({
+                title: <i>{error.response.data.message}</i>,
+                icon: "warning",
+                showCancelButton: false,
+                confirmButtonText: "Ok",
+              })
+              .then((result) => {
+                if (result.isConfirmed) {
+                }
+              });
           }
-        });
-    }
+        }
+      });
   };
+  
 
   const filteredMembers = members.filter((user) =>
     user.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -88,6 +88,7 @@ exports.login = async (req, res) => {
       member_id: user.member_id, 
       username: user.username, 
       profile_image: user.profile_image,
+      role: user.role,
     });
   } catch (error) {
     console.error(error);

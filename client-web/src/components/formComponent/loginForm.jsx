@@ -20,6 +20,7 @@ const LoginForm = ({ setIsAuthenticated }) => {
       localStorage.setItem("username", data.username);
       localStorage.setItem("isAuthenticated", "true"); 
       localStorage.setItem("profile_image", data.profile_image);
+      localStorage.setItem("role", data.role);
       setIsAuthenticated(true); 
       navigate("/"); 
     } catch (error) {

@@ -40,8 +40,6 @@ export function BorrowingForm({ book, onClose }) {
         due_date: dueDate.toISOString(), 
       });
 
-      console.log("Data being sent to the server:", response.data);
-
       MySwal.fire({
         title: <i>Book borrowed successfully!</i>,
         icon: "success",
