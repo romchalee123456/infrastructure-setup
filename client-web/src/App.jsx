@@ -13,39 +13,38 @@ import HistoryBorrowing from "./components/pageComponent/historyBorrowing";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // Check localStorage for 'isAuthenticated' status
     return localStorage.getItem("isAuthenticated") === "true";
   });
   const [selectedBook, setSelectedBook] = useState(null);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
-    localStorage.setItem("isAuthenticated", "true"); 
+    localStorage.setItem("isAuthenticated", "true");
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.setItem("isAuthenticated", "false"); 
+    localStorage.removeItem("isAuthenticated");
   };
 
   return (
     <Router>
       <div className="flex">
         <div className="flex-1">
-          {isAuthenticated && <Navbar setIsAuthenticated={handleLogout} />}
+          {isAuthenticated && <Navbar setIsAuthenticated={handleLogout}/>}
           <div className="p-4">
             <Routes>
               {!isAuthenticated ? (
                 <>
                   <Route path="/login" element={<LoginForm setIsAuthenticated={handleLogin} />} />
                   <Route path="/signup" element={<RegisterForm />} />
-                  <Route path="*" element={<Navigate to="/login" />} /> 
+                  <Route path="*" element={<Navigate to="/login" />} />
                 </>
               ) : (
                 <>
                   <Route path="/" element={<Book onBookSelect={setSelectedBook} />} />
-                  <Route path="/manage-book" element={<BookManagement />} />
-                  <Route path="/manage-user" element={<MemberManagement />} />
+                   <Route path="/manage-book" element={<BookManagement />} />
+                   <Route path="/manage-user" element={<MemberManagement />} />
                   <Route path="/borrow-history" element={<HistoryBorrowing />} />
                   <Route path="/manage-profile" element={<Profile />} />
                   <Route path="*" element={<Navigate to="/" />} />

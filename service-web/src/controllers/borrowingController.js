@@ -6,12 +6,11 @@ exports.borrowBook = async (req, res) => {
   const { member_id, due_date } = req.body;
 
   try {
-    // แก้ไขการใช้งาน id ที่ไม่ถูกต้อง
     const book = await prisma.book.findUnique({
-      where: { book_id: Number(book_id) }, // ใช้ id ที่ถูกต้อง
+      where: { book_id: Number(book_id) }, 
     });
     const member = await prisma.member.findUnique({
-      where: { member_id: Number(member_id) }, // ใช้ id ที่ถูกต้อง
+      where: { member_id: Number(member_id) }, 
     });
 
     if (!book || !member) {
@@ -62,7 +61,7 @@ exports.borrowBook = async (req, res) => {
     });
 
     await prisma.book.update({
-      where: { book_id: Number(book_id) }, // ใช้ id ที่ถูกต้อง
+      where: { book_id: Number(book_id) }, 
       data: { available_copies: book.available_copies - 1 },
     });
 
@@ -137,7 +136,8 @@ exports.getBorrowingHistoryAll = async (req, res) => {
       where: { member_id: req.currentUserId },
     });
 
-    if (!resultmember.user || resultmember.role !== "admin") {
+
+    if (resultmember.role === "admin") {
       const result = await prisma.borrowing.findMany({
         include: { 
           book: true ,
